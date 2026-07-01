@@ -19,7 +19,7 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage, disabled }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form onSubmit={handleSubmit} className="flex gap-3" aria-label="Send message form">
       <input
         type="text"
         value={input}
@@ -32,14 +32,16 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage, disabled }) => {
           isFocused
             ? 'border-blue-500 shadow-lg ring-2 ring-blue-200'
             : 'border-gray-300 hover:border-gray-400'
-        } disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none text-gray-900 placeholder-gray-500`}
+        } disabled:bg-gray-100 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 text-gray-900 placeholder-gray-500 text-base min-h-12`}
+        aria-label="Message input"
       />
       <button
         type="submit"
         disabled={disabled || !input.trim()}
         className="btn-primary flex items-center justify-center gap-2 min-w-max px-4"
+        aria-label={disabled ? 'Sending message' : 'Send message'}
       >
-        <FiSend size={20} />
+        <FiSend size={20} aria-hidden="true" />
         <span className="hidden sm:inline">Send</span>
       </button>
     </form>

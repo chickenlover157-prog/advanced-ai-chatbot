@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useStore } from '../store/useStore';
 import MessageBubble from './MessageBubble';
 import InputArea from './InputArea';
-import { FiLoader, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
+import { FiLoader, FiTrash2 } from 'react-icons/fi';
 
 const ChatWindow: React.FC<{ conversationId: string }> = ({ conversationId }) => {
   const [messages, setMessages] = useState<any[]>([]);
@@ -64,23 +64,31 @@ const ChatWindow: React.FC<{ conversationId: string }> = ({ conversationId }) =>
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden shadow-lg">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
+      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
         <h2 className="text-lg font-bold">💬 Chat Window</h2>
         <button
           onClick={clearMessages}
           className="btn-icon text-white hover:bg-blue-700 transition-colors"
-          title="Clear messages"
+          title="Clear all messages"
+          aria-label="Clear all messages"
         >
           <FiTrash2 size={20} />
         </button>
-      </div>
+      </header>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+      <main
+        className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white"
+        role="log"
+        aria-label="Chat messages"
+        aria-live="polite"
+      >
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="text-6xl mb-4">👋</div>
+              <div className="text-6xl mb-4" aria-hidden="true">
+                👋
+              </div>
               <p className="text-gray-500 text-lg">Start a conversation...</p>
             </div>
           </div>
@@ -91,24 +99,30 @@ const ChatWindow: React.FC<{ conversationId: string }> = ({ conversationId }) =>
           </div>
         ))}
         {loading && (
-          <div className="flex justify-center items-center py-8">
+          <div
+            className="flex justify-center items-center py-8"
+            role="status"
+            aria-label="Loading response"
+          >
             <div className="animate-spin">
               <FiLoader className="text-blue-500" size={32} />
             </div>
+            <span className="sr-only">Loading...</span>
           </div>
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </main>
 
       {/* Footer with RAG Toggle */}
-      <div className="border-t border-gray-200 p-6 bg-white shadow-lg">
+      <footer className="border-t border-gray-200 p-6 bg-white shadow-lg">
         <div className="mb-4">
           <label className="flex items-center cursor-pointer group">
             <input
               type="checkbox"
               checked={useRAG}
               onChange={(e) => setUseRAG(e.target.checked)}
-              className="w-4 h-4 text-blue-500 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="w-4 h-4 text-blue-500 rounded focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
+              aria-label="Enable knowledge base retrieval"
             />
             <span className="ml-3 text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
               🔍 Use Knowledge Base (RAG)
@@ -116,7 +130,7 @@ const ChatWindow: React.FC<{ conversationId: string }> = ({ conversationId }) =>
           </label>
         </div>
         <InputArea onSendMessage={handleSendMessage} disabled={loading} />
-      </div>
+      </footer>
     </div>
   );
 };

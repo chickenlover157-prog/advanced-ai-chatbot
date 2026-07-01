@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Accessibility focus styles */
+:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from {
@@ -54,6 +70,20 @@
   }
 }
 
+/* Reduce animations on mobile or when prefers-reduced-motion */
+@media (max-width: 768px) {
+  * {
+    animation-duration: 0.3s !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Custom utility classes */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
@@ -71,24 +101,25 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Touch-friendly buttons */
 .btn-primary {
-  @apply px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply min-h-12 px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 active:scale-95 transition-all duration-200 disabled:opacity-50;
+  @apply min-h-12 px-6 py-3 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 active:scale-95 transition-all duration-200 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500;
 }
 
 .btn-danger {
-  @apply px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl hover:from-red-600 hover:to-red-700 active:scale-95 transition-all duration-200 disabled:opacity-50;
+  @apply min-h-12 px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl hover:from-red-600 hover:to-red-700 active:scale-95 transition-all duration-200 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600;
 }
 
 .btn-success {
-  @apply px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl hover:from-green-600 hover:to-green-700 active:scale-95 transition-all duration-200;
+  @apply min-h-12 px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl hover:from-green-600 hover:to-green-700 active:scale-95 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600;
 }
 
 .btn-icon {
-  @apply p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200;
+  @apply p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 min-h-10 min-w-10 flex items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
 }
 
 .card {
@@ -100,11 +131,11 @@
 }
 
 .input-primary {
-  @apply w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-gray-50 hover:bg-white;
+  @apply w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-200 transition-all duration-200 bg-gray-50 hover:bg-white min-h-12 text-base;
 }
 
 .input-dark {
-  @apply w-full px-4 py-3 rounded-lg border-2 border-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-800 text-white;
+  @apply w-full px-4 py-3 rounded-lg border-2 border-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-900 transition-all duration-200 bg-gray-800 text-white min-h-12 text-base;
 }
 
 .gradient-text {
@@ -119,4 +150,54 @@
   animation: shimmer 2s infinite;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 1000px 100%;
+}
+
+/* Screen reader only text */
+.sr-only {
+  @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden clip-path-inset-50 whitespace-nowrap border-0;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  html {
+    font-size: 16px; /* Prevent zoom on input focus */
+  }
+
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevent zoom on input focus */
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-success {
+    @apply min-h-14 text-base; /* Larger touch targets */
+  }
+
+  .btn-icon {
+    @apply min-h-12 min-w-12; /* 48x48px minimum */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-success {
+    @apply border-2 border-current;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .card {
+    @apply bg-gray-800 text-white border-gray-700;
+  }
 }

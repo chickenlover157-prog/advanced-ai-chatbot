@@ -24,7 +24,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+      role="article"
+      aria-label={`${isUser ? 'Your' : 'Assistant'} message`}
+    >
       <div
         className={`max-w-xs lg:max-w-md px-4 py-3 rounded-xl shadow-md transition-all duration-200 hover:shadow-lg ${
           isUser
@@ -33,7 +37,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         }`}
       >
         {isUser ? (
-          <p className="text-sm sm:text-base">{message.content}</p>
+          <p className="text-sm sm:text-base break-words">{message.content}</p>
         ) : (
           <>
             <ReactMarkdown
@@ -58,7 +62,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             </ReactMarkdown>
             <button
               onClick={handleCopy}
-              className="mt-2 text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+              className="mt-2 text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors focus-visible:outline focus-visible:outline-1"
+              aria-label={copied ? 'Message copied to clipboard' : 'Copy message to clipboard'}
             >
               {copied ? (
                 <>
