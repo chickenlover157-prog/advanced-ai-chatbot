@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
+import { FiEye, FiEyeOff, FiMail, FiLock, FiUser } from 'react-icons/fi';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { setToken, setUser } = useStore();
   const navigate = useNavigate();
 
@@ -35,70 +37,127 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-96">
-        <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">Advanced AI Chatbot</h1>
-        <p className="text-center text-gray-600 mb-6">Powered by GPT-4</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Animation */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Name</label>
+      <div className="relative z-10 w-full max-w-md">
+        {/* Card */}
+        <div className="glass-effect backdrop-blur-2xl rounded-2xl shadow-2xl p-8 border border-white border-opacity-30">
+          {/* Logo & Title */}
+          <div className="text-center mb-8">
+            <div className="text-6xl mb-4 animate-bounce">🤖</div>
+            <h1 className="text-3xl font-bold gradient-text mb-2">ChatBot AI</h1>
+            <p className="text-gray-600 text-sm font-medium">Powered by GPT-4 Turbo</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name Input (Register only) */}
+            {!isLogin && (
+              <div className="relative">
+                <FiUser className="absolute left-3 top-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Full Name"
+                  className="input-primary pl-10 bg-white bg-opacity-90 focus:bg-white"
+                  required
+                />
+              </div>
+            )}
+
+            {/* Email Input */}
+            <div className="relative">
+              <FiMail className="absolute left-3 top-4 text-gray-400 pointer-events-none" />
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email Address"
+                className="input-primary pl-10 bg-white bg-opacity-90 focus:bg-white"
                 required
               />
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            {/* Password Input */}
+            <div className="relative">
+              <FiLock className="absolute left-3 top-4 text-gray-400 pointer-events-none" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password (min 8 characters)"
+                className="input-primary pl-10 pr-10 bg-white bg-opacity-90 focus:bg-white"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in">
+                <span className="text-xl">⚠️</span>
+                <span className="text-sm font-medium">{error}</span>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full text-lg py-3 font-bold shadow-lg hover:shadow-xl disabled:opacity-50"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {isLogin ? 'Signing In...' : 'Creating Account...'}
+                </span>
+              ) : isLogin ? (
+                'Sign In'
+              ) : (
+                'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Toggle */}
+          <div className="mt-8 pt-8 border-t border-gray-300 border-opacity-30 text-center">
+            <p className="text-gray-700 text-sm font-medium mb-4">
+              {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            </p>
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+              className="btn-secondary w-full"
+            >
+              {isLogin ? 'Create New Account' : 'Sign In Instead'}
+            </button>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-600">
+              By continuing, you agree to our Terms of Service
+            </p>
           </div>
-
-          {error && <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded">{error}</div>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition"
-          >
-            {loading ? 'Loading...' : isLogin ? 'Login' : 'Register'}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-500 font-semibold hover:underline"
-          >
-            {isLogin ? 'Register' : 'Login'}
-          </button>
-        </p>
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useStore } from '../store/useStore';
 import ChatWindow from '../components/ChatWindow';
 import TestingTab from '../components/TestingTab';
-import { FiPlus, FiSettings, FiLogOut, FiBeaker } from 'react-icons/fi';
+import { FiPlus, FiSettings, FiLogOut, FiBeaker, FiMenu, FiX, FiBarChart3 } from 'react-icons/fi';
 
 const Dashboard: React.FC = () => {
   const [conversations, setConversations] = useState<any[]>([]);
@@ -12,6 +12,7 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'testing'>('chat');
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { token, user, logout } = useStore();
   const navigate = useNavigate();
 
@@ -53,7 +54,7 @@ const Dashboard: React.FC = () => {
     try {
       const response = await axios.post(
         'http://localhost:5000/api/chat/conversations',
-        { title: `Conversation ${new Date().toLocaleTimeString()}` },
+        { title: `Chat ${new Date().toLocaleTimeString()}` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setConversations((prev) => [response.data, ...prev]);
@@ -64,119 +65,165 @@ const Dashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    if (window.confirm('Sign out?')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
+  const deleteConversation = async (convId: string) => {
+    if (window.confirm('Delete this conversation?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/chat/conversations/${convId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setConversations((prev) => prev.filter((c) => c._id !== convId));
+        if (selectedConversation === convId) {
+          setSelectedConversation(conversations.length > 1 ? conversations[1]._id : null);
+        }
+      } catch (error) {
+        console.error('Failed to delete conversation:', error);
+      }
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">ChatBot AI</h1>
-          <p className="text-sm text-gray-500">{user?.name}</p>
+      <div
+        className={`${
+          sidebarOpen ? 'w-64' : 'w-0'
+        } bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col transition-all duration-300 shadow-2xl overflow-hidden`}
+      >
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-700">
+          <h1 className="text-2xl font-bold gradient-text">🤖 ChatBot</h1>
+          <p className="text-xs text-gray-400 mt-1">Powered by GPT-4</p>
+          <p className="text-sm text-gray-300 mt-3 truncate">{user?.name}</p>
         </div>
 
+        {/* New Chat Button */}
         <button
           onClick={createNewConversation}
-          className="m-4 flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          className="m-4 flex items-center justify-center gap-2 btn-primary bg-blue-600 hover:bg-blue-700"
         >
-          <FiPlus /> New Chat
+          <FiPlus size={20} /> New Chat
         </button>
 
-        <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <button
-              key={conv._id}
-              onClick={() => setSelectedConversation(conv._id)}
-              className={`w-full text-left px-4 py-2 border-b border-gray-100 hover:bg-gray-50 transition ${
-                selectedConversation === conv._id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-              }`}
-            >
-              <p className="text-sm font-medium text-gray-800 truncate">{conv.title}</p>
-              <p className="text-xs text-gray-500">Messages: {conv.messages.length}</p>
-            </button>
-          ))}
+        {/* Conversations List */}
+        <div className="flex-1 overflow-y-auto px-2 space-y-2">
+          {conversations.length === 0 ? (
+            <p className="text-gray-400 text-sm p-4 text-center">No conversations yet</p>
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv._id}
+                onClick={() => setSelectedConversation(conv._id)}
+                className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                  selectedConversation === conv._id
+                    ? 'bg-blue-600 shadow-lg'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <p className="text-sm font-medium text-white truncate">{conv.title}</p>
+                <p className="text-xs text-gray-300 mt-1">{conv.messages.length} messages</p>
+              </div>
+            ))
+          )}
         </div>
 
-        <div className="border-t border-gray-200 p-4 space-y-2">
+        {/* Bottom Actions */}
+        <div className="border-t border-gray-700 p-4 space-y-2">
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded transition"
+            className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200"
           >
-            <FiSettings /> Analytics
+            <FiBarChart3 size={20} /> Analytics
           </button>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded transition"
+            className="w-full flex items-center justify-center gap-2 btn-danger"
           >
-            <FiLogOut /> Logout
+            <FiLogOut size={20} /> Sign Out
           </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Tabs */}
-        <div className="border-b border-gray-200 bg-white">
-          <div className="flex">
+        {/* Top Bar */}
+        <div className="bg-white border-b border-gray-200 shadow-md flex items-center justify-between p-4">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="btn-icon hover:bg-gray-200 text-gray-800"
+          >
+            {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+
+          {/* Tabs */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`flex items-center gap-2 px-6 py-4 font-semibold border-b-2 transition ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 ${
                 activeTab === 'chat'
-                  ? 'border-blue-500 text-blue-500'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
+                  ? 'bg-white text-blue-600 shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               💬 Chat
             </button>
             <button
               onClick={() => setActiveTab('testing')}
-              className={`flex items-center gap-2 px-6 py-4 font-semibold border-b-2 transition ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 ${
                 activeTab === 'testing'
-                  ? 'border-red-500 text-red-500'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
+                  ? 'bg-white text-red-600 shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              <FiBeaker /> Testing
+              <FiBeaker size={18} /> Testing
             </button>
           </div>
+
+          <div className="text-sm text-gray-600">Version 1.0</div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden p-4">
+        <div className="flex-1 overflow-hidden p-6">
           {activeTab === 'chat' && selectedConversation && (
             <ChatWindow conversationId={selectedConversation} />
           )}
           {activeTab === 'testing' && <TestingTab />}
         </div>
-
-        {/* Analytics Modal */}
-        {showAnalytics && analytics && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-lg font-bold mb-4">Your Analytics</h3>
-              <div className="space-y-2">
-                <p className="text-gray-700">
-                  <strong>Total Tokens:</strong> {analytics.totalTokens.toLocaleString()}
-                </p>
-                <p className="text-gray-700">
-                  <strong>Messages Sent:</strong> {analytics.messagesCount}
-                </p>
-                <p className="text-gray-700">
-                  <strong>Avg Tokens/Message:</strong> {analytics.averageTokensPerMessage}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAnalytics(false)}
-                className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Analytics Modal */}
+      {showAnalytics && analytics && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="card p-8 max-w-md w-full shadow-2xl animate-fade-in">
+            <h3 className="text-2xl font-bold gradient-text mb-6">📊 Your Analytics</h3>
+            <div className="space-y-4 mb-6">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <p className="text-sm text-gray-600 mb-1">Total Tokens</p>
+                <p className="text-3xl font-bold text-blue-600">{analytics.totalTokens.toLocaleString()}</p>
+              </div>
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <p className="text-sm text-gray-600 mb-1">Messages Sent</p>
+                <p className="text-3xl font-bold text-purple-600">{analytics.messagesCount}</p>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <p className="text-sm text-gray-600 mb-1">Avg Tokens/Message</p>
+                <p className="text-3xl font-bold text-green-600">{analytics.averageTokensPerMessage}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAnalytics(false)}
+              className="btn-primary w-full"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

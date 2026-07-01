@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
 import { v4 as uuidv4 } from 'uuid';
+import { FiPlay, FiRotateCcw, FiCopy, FiCheck } from 'react-icons/fi';
 
 const TestingTab: React.FC = () => {
   const [sessionId] = useState(uuidv4());
@@ -11,6 +12,7 @@ const TestingTab: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [temperature, setTemperature] = useState(1.0);
   const [maxTokens, setMaxTokens] = useState(4000);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const { token } = useStore();
 
   const executeQuery = async () => {
@@ -30,9 +32,11 @@ const TestingTab: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      const responseId = uuidv4();
       setResponses((prev) => [
         ...prev,
         {
+          id: responseId,
           query,
           response: response.data.response,
           timestamp: new Date(),
@@ -48,21 +52,34 @@ const TestingTab: React.FC = () => {
   };
 
   const clearSession = () => {
-    setResponses([]);
-    setQuery('');
-    setSystemPrompt('');
+    if (window.confirm('Clear all queries?')) {
+      setResponses([]);
+      setQuery('');
+      setSystemPrompt('');
+    }
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
-    <div className="h-full bg-gray-900 text-white p-6 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">🧪 Unrestricted Testing Tab</h2>
-      <p className="text-gray-400 mb-6">
-        Everything is unrestricted here. Test any prompt, any model behavior, any configuration.
-      </p>
+    <div className="h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8 rounded-xl overflow-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <h2 className="text-4xl font-bold gradient-text mb-2">🔬 Unrestricted Testing Lab</h2>
+        <p className="text-gray-400 text-lg">
+          Everything is unrestricted here. Test any prompt, any behavior, any configuration.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-semibold mb-2">Temperature</label>
+      {/* Settings Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Temperature */}
+        <div className="card-dark p-4">
+          <label className="block text-sm font-bold text-blue-400 mb-3">🌡️ Temperature</label>
           <input
             type="range"
             min="0"
@@ -70,67 +87,107 @@ const TestingTab: React.FC = () => {
             step="0.1"
             value={temperature}
             onChange={(e) => setTemperature(parseFloat(e.target.value))}
-            className="w-full"
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
-          <p className="text-xs text-gray-400 mt-1">Current: {temperature.toFixed(1)}</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-xs text-gray-400">Deterministic</span>
+            <span className="text-lg font-bold text-blue-400">{temperature.toFixed(1)}</span>
+            <span className="text-xs text-gray-400">Creative</span>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-semibold mb-2">Max Tokens</label>
+
+        {/* Max Tokens */}
+        <div className="card-dark p-4">
+          <label className="block text-sm font-bold text-purple-400 mb-3">📝 Max Tokens</label>
           <input
             type="number"
             min="100"
             max="4000"
             value={maxTokens}
             onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded"
+            className="input-dark"
           />
+          <p className="text-xs text-gray-400 mt-2">Total tokens: {maxTokens.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">System Prompt (Optional)</label>
+      {/* System Prompt */}
+      <div className="mb-6 card-dark p-4">
+        <label className="block text-sm font-bold text-pink-400 mb-2">🎭 System Prompt (Optional)</label>
         <textarea
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
-          placeholder="Custom system prompt for unrestricted testing..."
-          className="w-full h-24 px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+          placeholder="Define custom instructions for unrestricted testing..."
+          className="input-dark h-24 font-mono text-sm"
         />
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Query</label>
+      {/* Query Input */}
+      <div className="mb-6 card-dark p-4">
+        <label className="block text-sm font-bold text-green-400 mb-2">⚡ Query</label>
         <textarea
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Enter your unrestricted query here..."
-          className="w-full h-32 px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="input-dark h-32 font-mono text-sm"
         />
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* Action Buttons */}
+      <div className="flex gap-4 mb-8">
         <button
           onClick={executeQuery}
           disabled={loading}
-          className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 px-6 py-2 rounded font-semibold transition"
+          className="btn-primary flex items-center justify-center gap-2 flex-1 text-lg py-4"
         >
-          {loading ? 'Executing...' : 'Execute Unrestricted Query'}
+          <FiPlay size={24} />
+          {loading ? 'Executing...' : 'Execute Query'}
         </button>
         <button
           onClick={clearSession}
-          className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded font-semibold transition"
+          className="btn-secondary flex items-center justify-center gap-2 px-6 py-4 text-lg hover:bg-gray-600 text-gray-200"
         >
+          <FiRotateCcw size={24} />
           Clear
         </button>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {responses.map((resp, idx) => (
-          <div key={idx} className="bg-gray-800 p-4 rounded border border-gray-700">
-            <p className="text-yellow-400 font-semibold mb-2">Q: {resp.query}</p>
-            <p className="text-green-400 text-sm whitespace-pre-wrap">{resp.response}</p>
-            <p className="text-gray-500 text-xs mt-2">{new Date(resp.timestamp).toLocaleTimeString()}</p>
+      {/* Responses */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-gray-300 mb-4">📋 Query History ({responses.length})</h3>
+        {responses.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <p className="text-lg">No queries executed yet. Run a query to see results here.</p>
           </div>
-        ))}
+        ) : (
+          responses.map((resp) => (
+            <div key={resp.id} className="card-dark p-5 border-l-4 border-blue-500 animate-fade-in">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-yellow-300 font-bold text-sm flex-1">Q: {resp.query.substring(0, 100)}...</p>
+                <button
+                  onClick={() => copyToClipboard(resp.response, resp.id)}
+                  className="ml-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs flex items-center gap-1 transition-colors"
+                >
+                  {copiedId === resp.id ? (
+                    <>
+                      <FiCheck size={14} /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <FiCopy size={14} /> Copy
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-green-300 text-sm whitespace-pre-wrap font-mono leading-relaxed max-h-40 overflow-y-auto">
+                {resp.response}
+              </p>
+              <p className="text-gray-500 text-xs mt-3">
+                🕐 {new Date(resp.timestamp).toLocaleTimeString()}
+              </p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
